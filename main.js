@@ -9,32 +9,31 @@ const offerTextarea = document.getElementById('offer');
 
 startSessionButton.onclick = async () => {
     try {
-        // Открываем блок для начала сессии
         startBox.style.display = 'block';
         joinBox.style.display = 'none';
 
-        // Создаём новый RTCPeerConnection
+        // Создаем новый RTCPeerConnection
         peerConnection = new RTCPeerConnection(config);
 
         // Получаем доступ к микрофону
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
-        // Обработка ICE-кандидатов
+        // Обрабатываем ICE-кандидатов
         peerConnection.onicecandidate = event => {
             if (event.candidate) {
                 console.log('ICE Candidate:', event.candidate);
             }
         };
 
-        // Обработка входящего аудиопотока
+        // Обрабатываем треки
         peerConnection.ontrack = event => {
             const audio = document.createElement('audio');
             audio.srcObject = event.streams[0];
             audio.play();
         };
 
-        // Создаём offer (предложение) и отображаем его
+        // Создаем offer и отображаем его
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         offerTextarea.value = JSON.stringify(peerConnection.localDescription);
@@ -47,8 +46,14 @@ startSessionButton.onclick = async () => {
 document.getElementById('setAnswer').onclick = async () => {
     try {
         const answer = JSON.parse(document.getElementById('answer').value);
-        await peerConnection.setRemoteDescription(answer);
-        console.log("Answer установлен:", answer);
+
+        // Проверка состояния, чтобы установить answer только в нужный момент
+        if (peerConnection.signalingState !== 'stable') {
+            await peerConnection.setRemoteDescription(answer);
+            console.log("Answer установлен:", answer);
+        } else {
+            console.warn('Соединение уже находится в стабильном состоянии. Answer не установлен.');
+        }
     } catch (error) {
         console.error('Ошибка при установке answer:', error);
     }
@@ -89,3 +94,4 @@ document.getElementById('createAnswer').onclick = async () => {
         console.error('Ошибка при создании answer:', error);
     }
 };
+
