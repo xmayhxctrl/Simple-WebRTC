@@ -46,9 +46,9 @@ function initializePeerConnection() {
     peerConnection.createOffer().then((offer) => {
       return peerConnection.setLocalDescription(offer);
     }).then(() => {
-      // Передать offer через копирование ссылки (альтернативно можно использовать WebSocket)
+      // Передать offer через копирование ссылки 
       const offerLink = `${window.location.href}&offer=${encodeURIComponent(peerConnection.localDescription.sdp)}`;
-      roomLinkInput.value = offerLink;  // Пользователь может скопировать и передать это другому участнику
+      roomLinkInput.value = offerLink;  
     });
     
     // Проверяем, есть ли ответ в URL
